@@ -1,6 +1,6 @@
-$(document).ready(function () {
+$(document).ready(function() {
   // Form submittion with new message in field with id 'm'
-  $('form').submit(function () {
+  $('form').submit(function() {
     var messageToSend = $('#m').val();
 
     $('#m').val('');
