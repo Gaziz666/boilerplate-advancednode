@@ -8,17 +8,7 @@ const fccTesting = require('./freeCodeCamp/fcctesting.js')
 const ObjectId = require('mongodb').ObjectId
 
 const app = express()
-
 app.set('view engine', 'pug')
-passport.serializeUser((user, done) => {
-  done(null, user._id)
-})
-passport.deserializeUser((id, done) => {
-  done(null, null)
-  // myDatabase.findOne({ _id: new ObjectId(id) }, (err, doc) => {
-  //   done(null, null)
-  // })
-})
 fccTesting(app) //For FCC testing purposes test
 app.use('/public', express.static(process.cwd() + '/public'))
 app.use(express.json())
@@ -34,10 +24,30 @@ app.use(
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.route('/').get((req, res) => {
-  res.render(process.cwd() + '/views/pug', {
-    title: 'Hello',
-    message: 'Please login'
+myDB(async (client) => {
+  const myDatabase = await client.db('database').collection('users')
+
+  app.route('/').get((req, res) => {
+    res.render(process.cwd() + '/views/pug', {
+      title: 'Connected to db',
+      message: 'Please login'
+    })
+  })
+
+  passport.serializeUser((user, done) => {
+    done(null, user._id)
+  })
+  passport.deserializeUser((id, done) => {
+    myDatabase.findOne({ _id: new ObjectId(id) }, (err, doc) => {
+      done(null, null)
+    })
+  })
+}).catch((err) => {
+  app.route('/').get((req, res) => {
+    res.render(process.cwd() + '/views/pug', {
+      title: err,
+      message: 'Unable to login'
+    })
   })
 })
 
